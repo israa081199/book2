@@ -1,1 +1,1420 @@
+```html
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דשבורד אינטראקטיבי | ניתוח נתונים מתקדם</title>
+    <script src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --primary-dark: #5A52D5;
+            --secondary: #00D9FF;
+            --accent: #FF6B9D;
+            --dark: #0a0a1a;
+            --darker: #06060f;
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text: #e8e8f0;
+            --text-muted: #8888a8;
+            --glow-primary: rgba(108, 99, 255, 0.3);
+            --glow-secondary: rgba(0, 217, 255, 0.3);
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--darker);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.8;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-animation .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: floatOrb 20s ease-in-out infinite;
+        }
+
+        .bg-animation .orb:nth-child(1) {
+            width: 600px;
+            height: 600px;
+            background: var(--primary);
+            top: -200px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .bg-animation .orb:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            background: var(--secondary);
+            bottom: -150px;
+            left: -100px;
+            animation-delay: -7s;
+        }
+
+        .bg-animation .orb:nth-child(3) {
+            width: 400px;
+            height: 400px;
+            background: var(--accent);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -14s;
+        }
+
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(80px, -60px) scale(1.1); }
+            50% { transform: translate(-40px, 80px) scale(0.9); }
+            75% { transform: translate(60px, 40px) scale(1.05); }
+        }
+
+        /* Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: particleFloat linear infinite;
+        }
+
+        @keyframes particleFloat {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* Grid overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background-image: 
+                linear-gradient(rgba(108, 99, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(108, 99, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(20px);
+            background: rgba(6, 6, 15, 0.7);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .navbar.scrolled {
+            padding: 10px 40px;
+            background: rgba(6, 6, 15, 0.9);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .nav-logo .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 0 0 0 var(--glow-primary); }
+            50% { box-shadow: 0 0 20px 5px var(--glow-primary); }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+            padding-bottom: 4px;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-menu-btn {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 8px;
+            background: none;
+            border: none;
+        }
+
+        .nav-menu-btn span {
+            width: 25px;
+            height: 2px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 40px 80px;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 900px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: rgba(108, 99, 255, 0.1);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--secondary);
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease forwards;
+            opacity: 0;
+        }
+
+        .hero-badge .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--secondary);
+            border-radius: 50%;
+            animation: pulseDot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.5); }
+        }
+
+        .hero h1 {
+            font-family: 'Rubik', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.8s ease 0.2s forwards;
+            opacity: 0;
+        }
+
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 200% center; }
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 40px;
+            line-height: 2;
+            animation: fadeInUp 0.8s ease 0.4s forwards;
+            opacity: 0;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.6s forwards;
+            opacity: 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 32px;
+            border-radius: 14px;
+            font-family: 'Heebo', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 20px var(--glow-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px var(--glow-primary);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .scroll-indicator .mouse {
+            width: 24px;
+            height: 38px;
+            border: 2px solid var(--text-muted);
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .scroll-indicator .mouse::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 4px;
+            animation: scrollWheel 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollWheel {
+            0%, 100% { top: 6px; opacity: 1; }
+            50% { top: 18px; opacity: 0.3; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Sections */
+        .section {
+            position: relative;
+            z-index: 1;
+            padding: 100px 40px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+        }
+
+        .section-label::before,
+        .section-label::after {
+            content: '';
+            width: 30px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary));
+        }
+
+        .section-label::after {
+            background: linear-gradient(90deg, var(--primary), transparent);
+        }
+
+        .section-title {
+            font-family: 'Rubik', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 36px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(108, 99, 255, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .feature-icon.icon-1 {
+            background: rgba(108, 99, 255, 0.15);
+            color: var(--primary);
+        }
+
+        .feature-icon.icon-2 {
+            background: rgba(0, 217, 255, 0.15);
+            color: var(--secondary);
+        }
+
+        .feature-icon.icon-3 {
+            background: rgba(255, 107, 157, 0.15);
+            color: var(--accent);
+        }
+
+        .feature-icon.icon-4 {
+            background: rgba(0, 255, 136, 0.15);
+            color: #00ff88;
+        }
+
+        .feature-icon.icon-5 {
+            background: rgba(255, 200, 55, 0.15);
+            color: #ffc837;
+        }
+
+        .feature-icon.icon-6 {
+            background: rgba(200, 100, 255, 0.15);
+            color: #c864ff;
+        }
+
+        .feature-card h3 {
+            font-family: 'Rubik', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.9;
+        }
+
+        /* Dashboard Section */
+        .dashboard-section {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .dashboard-container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .dashboard-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dashboard-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dashboard-dots span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dashboard-dots span:nth-child(1) { background: #ff5f57; }
+        .dashboard-dots span:nth-child(2) { background: #ffbd2e; }
+        .dashboard-dots span:nth-child(3) { background: #28c840; }
+
+        .dashboard-header-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .dashboard-header-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(40, 200, 64, 0.1);
+            border: 1px solid rgba(40, 200, 64, 0.3);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            color: #28c840;
+        }
+
+        .dashboard-header-badge .live-dot {
+            width: 6px;
+            height: 6px;
+            background: #28c840;
+            border-radius: 50%;
+            animation: pulseDot 1.5s ease-in-out infinite;
+        }
+
+        .tableau-viz {
+            width: 100%;
+            min-height: 750px;
+        }
+
+        .tableau-viz .tableauPlaceholder {
+            width: 100% !important;
+            min-height: 750px;
+        }
+
+        .tableau-viz iframe {
+            width: 100% !important;
+            min-height: 750px;
+        }
+
+        /* About Section */
+        .about-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .about-text h3 {
+            font-family: 'Rubik', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .about-text p {
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            line-height: 2;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(108, 99, 255, 0.3);
+        }
+
+        .stat-number {
+            font-family: 'Rubik', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Visual representation */
+        .about-visual {
+            position: relative;
+        }
+
+        .visual-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .visual-card .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            height: 200px;
+            padding: 20px 0;
+        }
+
+        .chart-bar {
+            flex: 1;
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            animation: barGrow 1.5s ease forwards;
+            opacity: 0;
+        }
+
+        .chart-bar:nth-child(1) { background: linear-gradient(to top, var(--primary), rgba(108, 99, 255, 0.5)); animation-delay: 0.1s; }
+        .chart-bar:nth-child(2) { background: linear-gradient(to top, var(--secondary), rgba(0, 217, 255, 0.5)); animation-delay: 0.2s; }
+        .chart-bar:nth-child(3) { background: linear-gradient(to top, var(--accent), rgba(255, 107, 157, 0.5)); animation-delay: 0.3s; }
+        .chart-bar:nth-child(4) { background: linear-gradient(to top, #00ff88, rgba(0, 255, 136, 0.5)); animation-delay: 0.4s; }
+        .chart-bar:nth-child(5) { background: linear-gradient(to top, #ffc837, rgba(255, 200, 55, 0.5)); animation-delay: 0.5s; }
+        .chart-bar:nth-child(6) { background: linear-gradient(to top, #c864ff, rgba(200, 100, 255, 0.5)); animation-delay: 0.6s; }
+        .chart-bar:nth-child(7) { background: linear-gradient(to top, var(--primary), var(--secondary)); animation-delay: 0.7s; }
+
+        @keyframes barGrow {
+            from { height: 0; opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .chart-bar:nth-child(1) { height: 60%; }
+        .chart-bar:nth-child(2) { height: 85%; }
+        .chart-bar:nth-child(3) { height: 45%; }
+        .chart-bar:nth-child(4) { height: 95%; }
+        .chart-bar:nth-child(5) { height: 70%; }
+        .chart-bar:nth-child(6) { height: 55%; }
+        .chart-bar:nth-child(7) { height: 80%; }
+
+        .visual-label {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        .footer {
+            position: relative;
+            z-index: 1;
+            padding: 60px 40px 30px;
+            border-top: 1px solid var(--card-border);
+            background: rgba(6, 6, 15, 0.8);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .footer-brand-text h4 {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .footer-brand-text span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .footer-credit {
+            text-align: center;
+        }
+
+        .footer-credit p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-credit .creator {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .footer-credit .heart {
+            color: var(--accent);
+            display: inline-block;
+            animation: heartBeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Scroll Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Divider */
+        .section-divider {
+            position: relative;
+            z-index: 1;
+            height: 1px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(90deg, transparent, var(--card-border), var(--primary), var(--card-border), transparent);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 20px;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                padding: 20px;
+                background: rgba(6, 6, 15, 0.95);
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid var(--card-border);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-menu-btn {
+                display: flex;
+            }
+
+            .hero {
+                padding: 100px 20px 60px;
+            }
+
+            .section {
+                padding: 60px 20px;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Loading State */
+        .viz-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            gap: 20px;
+        }
+
+        .viz-loading .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--card-border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .viz-loading p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Tooltip style */
+        .info-tooltip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: help;
+        }
+
+        /* Glow line */
+        .glow-line {
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            margin: 0 auto 30px;
+            box-shadow: 0 0 20px var(--glow-primary);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--darker);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* Back to top */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px var(--glow-primary);
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px var(--glow-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <div class="grid-overlay"></div>
+
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <a href="#" class="nav-logo">
+            <div class="logo-icon">📊</div>
+            <span>DataVision</span>
+        </a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#hero">ראשי</a></li>
+            <li><a href="#features">תכונות</a></li>
+            <li><a href="#dashboard">הדשבורד</a></li>
+            <li><a href="#about">אודות</a></li>
+        </ul>
+        <button class="nav-menu-btn" id="menuBtn" aria-label="תפריט">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="pulse-dot"></span>
+                מערכת ניתוח נתונים מתקדמת
+            </div>
+            <h1>
+                תובנות שמניעות<br>
+                <span class="gradient-text">החלטות אסטרטגיות</span>
+            </h1>
+            <p class="hero-description">
+                ברוכים הבאים לפלטפורמת הניתוח המתקדמת שלנו — כאן הנתונים הופכים לסיפור.
+                בעזרת ויזואליזציות אינטראקטיביות ותרשימים דינמיים, אנו מאפשרים לכם
+                לחקור, לנתח ולהבין מגמות מורכבות במבט אחד.
+            </p>
+            <div class="hero-buttons">
+                <a href="#dashboard" class="btn btn-primary">
+                    🚀 צפה בדשבורד
+                </a>
+                <a href="#features" class="btn btn-outline">
+                    💡 למד עוד
+                </a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="mouse"></div>
+            <span>גלול למטה</span>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Features Section -->
+    <section class="section" id="features">
+        <div class="section-header reveal">
+            <div class="section-label">
+                יכולות המערכת
+            </div>
+            <h2 class="section-title">למה לבחור ב-<span class="gradient-text">DataVision</span>?</h2>
+            <p class="section-subtitle">
+                פלטפורמה מתקדמת לניתוח נתונים המספקת כלים חכמים לקבלת החלטות מבוססות מידע
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-1">📈</div>
+                <h3>ויזואליזציה מתקדמת</h3>
+                <p>תרשימים אינטראקטיביים המאפשרים חקר עומק של הנתונים, זיהוי מגמות ודפוסים מורכבים בצורה ויזואלית ברורה.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-2">⚡</div>
+                <h3>נתונים בזמן אמת</h3>
+                <p>גישה לנתונים מעודכנים באופן מיידי. הדשבורד מתעדכן אוטומטית ומספק תמונת מצב עדכנית בכל רגע נתון.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-3">🎯</div>
+                <h3>מיקוד בתובנות</h3>
+                <p>המערכת מסננת רעשים ומציגה רק את המידע החשוב — כך שאתם מתמקדים במה שבאמת משנה לקבלת ההחלטות.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-4">🔍</div>
+                <h3>חקירה אינטראקטיבית</h3>
+                <p>סננו, מינו וצללו לעומק הנתונים. כל תרשים מאפשר אינטראקציה מלאה — לחיצה, גרירה וזום לגילוי תובנות נסתרות.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-5">📱</div>
+                <h3>נגישות מלאה</h3>
+                <p>עובד מושלם על כל מכשיר — מחשב, טאבלט או נייד. הנתונים תמיד בהישג יד, בכל מקום ובכל זמן.</p>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-6">🧠</div>
+                <h3>ניתוח מבוסס AI</h3>
+                <p>אלגוריתמים חכמים מזהים קורלציות ומגמות שאולי לא שמתם לב אליהן, ומציגים תובנות מפתיעות.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Dashboard Section -->
+    <section class="section" id="dashboard">
+        <div class="section-header reveal">
+            <div class="section-label">
+                הדשבורד המרכזי
+            </div>
+            <h2 class="section-title">התרשים <span class="gradient-text">האינטראקטיבי</span></h2>
+            <p class="section-subtitle">
+                חקרו את הנתונים בעצמכם — לחצו, סננו וצללו לעומק המידע
+            </p>
+        </div>
+
+        <div class="dashboard-section">
+            <div class="dashboard-container reveal">
+                <div class="dashboard-header">
+                    <div class="dashboard-header-left">
+                        <div class="dashboard-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span class="dashboard-header-title">דשבורד ניתוח נתונים</span>
+                    </div>
+                    <div class="dashboard-header-badge">
+                        <span class="live-dot"></span>
+                        מחובר ל-Tableau Public
+                    </div>
+                </div>
+                <div class="tableau-viz" id="tableauViz">
+                    <div class="viz-loading" id="vizLoading">
+                        <div class="spinner"></div>
+                        <p>טוען את הדשבורד...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- About Section -->
+    <section class="section" id="about">
+        <div class="section-header reveal">
+            <div class="section-label">
+                אודות המערכת
+            </div>
+            <h2 class="section-title">כוחו של <span class="gradient-text">המידע</span></h2>
+        </div>
+
+        <div class="about-content">
+            <div class="about-text reveal">
+                <h3>מהות התרשימים והתועלת</h3>
+                <p>
+                    הדשבורד מציג סדרת תרשימים מתקדמים שנבנו באמצעות Tableau — כלי הוויזואליזציה
+                    המוביל בעולם. כל תרשים נועד לענות על שאלה עסקית ספציפית ולספק תשובה
+                    ויזואלית ברורה ומהירה.
+                </p>
+                <p>
+                    התרשימים כוללים מגמות זמן, התפלגויות, השוואות בין קטגוריות, ויחסי גומלין
+                    בין משתנים — כל אלה מאפשרים לקבל החלטות חכמות ומבוססות נתונים במקום
+                    אינטואיציה בלבד.
+                </p>
+                <p>
+                    בין אם אתם מנהלים, אנליסטים או אנשי מקצוע — הדשבורד הזה מספק לכם
+                    את הכלים להבין את הנתונים לעומק ולפעול בהתאם.
+                </p>
+            </div>
+
+            <div class="about-visual reveal">
+                <div class="about-stats" style="margin-bottom: 24px;">
+                    <div class="stat-card">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">נתונים מעודכנים</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">∞</div>
+                        <div class="stat-label">אפשרויות חקירה</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">זמינות מלאה</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">360°</div>
+                        <div class="stat-label">תמונת מצב</div>
+                    </div>
+                </div>
+
+                <div class="visual-card">
+                    <div class="chart-bars">
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                        <div class="chart-bar"></div>
+                    </div>
+                    <div class="visual-label">
+                        <span>ינו</span>
+                        <span>פבר</span>
+                        <span>מרץ</span>
+                        <span>אפר</span>
+                        <span>מאי</span>
+                        <span>יונ</span>
+                        <span>יול</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">📊</div>
+                <div class="footer-brand-text">
+                    <h4>DataVision</h4>
+                    <span>פלטפורמת ניתוח נתונים</span>
+                </div>
+            </div>
+            <div class="footer-credit">
+                <p>נבנה עם <span class="heart">❤️</span> על ידי</p>
+                <p class="creator">אסרא</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 DataVision — כל הזכויות שמורות | פותח ונבנה על ידי אסרא</p>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" aria-label="חזור למעלה">↑</button>
+
+    <script>
+        // Particles
+        (function() {
+            const container = document.getElementById('particles');
+            const count = 40;
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (8 + Math.random() * 12) + 's';
+                p.style.animationDelay = (Math.random() * 10) + 's';
+                p.style.width = (1 + Math.random() * 2) + 'px';
+                p.style.height = p.style.width;
+                container.appendChild(p);
+            }
+        })();
+
+        // Navbar scroll
+        const navbar = document.getElementById('navbar');
+        const backToTop = document.getElementById('backToTop');
+
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+
+            if (window.scrollY > 500) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        backToTop.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Mobile menu
+        const menuBtn = document.getElementById('menuBtn');
+        const navLinks = document.getElementById('navLinks');
+
+        menuBtn.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+        });
+
+        navLinks.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // Scroll reveal
+        const revealElements = document.querySelectorAll('.reveal');
+
+        const revealObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        revealElements.forEach(function(el) {
+            revealObserver.observe(el);
+        });
+
+        // Tableau Embed
+        (function() {
+            var vizDiv = document.getElementById('tableauViz');
+            var loadingEl = document.getElementById('vizLoading');
+            var vizUrl = 'https://public.tableau.com/views/Book2_17774065020390/Dashboard1';
+            var vizOptions = {
+                hideTabs: true,
+                hideToolbar: false,
+                width: '100%',
+                onFirstInteractive: function() {
+                    if (loadingEl) {
+                        loadingEl.style.display = 'none';
+                    }
+                }
+            };
+
+            // Wait for DOM and Tableau API
+            if (typeof tableau !== 'undefined' && tableau.Viz) {
+                var viz = new tableau.Viz(vizDiv, vizUrl, vizOptions);
+            } else {
+                // Fallback: use iframe
+                var iframe = document.createElement('iframe');
+                iframe.src = vizUrl + '?:embed=yes&:toolbar=yes&:tabs=no&:showVizHome=no&:display_count=y&:display_static_image=y&:bootstrapWhenNotified=y';
+                iframe.style.width = '100%';
+                iframe.style.minHeight = '750px';
+                iframe.style.border = 'none';
+                iframe.frameBorder = '0';
+                iframe.allowFullscreen = true;
+
+                iframe.onload = function() {
+                    if (loadingEl) {
+                        loadingEl.style.display = 'none';
+                    }
+                };
+
+                // Remove loading placeholder and add iframe
+                if (loadingEl) {
+                    vizDiv.innerHTML = '';
+                }
+                vizDiv.appendChild(iframe);
+
+                // Timeout fallback
+                setTimeout(function() {
+                    if (loadingEl && loadingEl.style.display !== 'none') {
+                        loadingEl.style.display = 'none';
+                    }
+                }, 8000);
+            }
+        })();
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    var offset = 80;
+                    var targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                    window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+```
